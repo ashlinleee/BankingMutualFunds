@@ -10,10 +10,14 @@ const backToExploreFromAllBtn = document.getElementById('back-to-explore-from-al
 const viewAllFundsLink = document.getElementById('view-all-funds-link');
 const popularFundsGrid = document.getElementById('popular-funds-grid');
 const allFundsGrid = document.getElementById('all-funds-grid');
+const fundsStatus = document.getElementById('funds-status');
+const fundsStatusAll = document.getElementById('funds-status-all');
 
 // Details
 const schemeName = document.getElementById('scheme-name');
 const schemeNav = document.getElementById('scheme-nav');
+const navDate = document.getElementById('nav-date');
+const navLiveText = document.getElementById('nav-live-text');
 
 // Invest Widget
 const tabSip = document.getElementById('tab-sip');
@@ -30,28 +34,33 @@ let mutualFunds = [];
 let filteredFunds = [];
 let selectedScheme = null;
 
+const getFundName = (fund) => fund.scheme_name || fund.schemeName || 'Unknown Fund';
+const getFundCode = (fund) => fund.scheme_code || fund.schemeCode || '';
+const setFundsStatus = (text) => {
+    if (fundsStatus) fundsStatus.textContent = text;
+    if (fundsStatusAll) fundsStatusAll.textContent = text;
+};
+
 // Initialization
 const init = async () => {
     await fetchMutualFunds();
 };
 
 const fetchMutualFunds = async () => {
+    setFundsStatus('Loading funds...');
     try {
-        const response = await fetch(API_URL);
-        mutualFunds = await response.json();
+        const response = await fetch(`${API_URL}/schemes`);
+        const data = await response.json();
+        const list = Array.isArray(data) ? data : (data.data || []);
+        mutualFunds = list.slice(0, 50);
         filteredFunds = [...mutualFunds];
         renderFunds();
     } catch (error) {
         console.error('Error fetching mutual funds:', error);
-        // Fallback mockup data if backend fails
-        mutualFunds = [
-            { schemeCode: 120503, schemeName: "Nippon India Small Cap Fund" },
-            { schemeCode: 119598, schemeName: "SBI Small Cap Fund" },
-            { schemeCode: 118989, schemeName: "HDFC Small Cap Fund" },
-            { schemeCode: 146503, schemeName: "Quant Small Cap Fund" }
-        ];
-        filteredFunds = [...mutualFunds];
+        mutualFunds = [];
+        filteredFunds = [];
         renderFunds();
+        setFundsStatus('Unable to load funds from API. Check backend.');
     }
 };
 
@@ -59,51 +68,72 @@ const renderFunds = () => {
     popularFundsGrid.innerHTML = '';
     allFundsGrid.innerHTML = '';
     
-    // Just rendering all logic. For "popular", let's just pick top 3
     const popular = filteredFunds.slice(0, 3);
     
     popular.forEach(fund => popularFundsGrid.appendChild(createFundCard(fund)));
     filteredFunds.forEach(fund => allFundsGrid.appendChild(createFundCard(fund)));
+
+    if (!filteredFunds.length) {
+        setFundsStatus('No funds found. Try a different search.');
+        return;
+    }
+    setFundsStatus(`Showing ${filteredFunds.length} funds`);
 };
 
 const createFundCard = (fund) => {
     const card = document.createElement('div');
     card.classList.add('fund-card');
-    // Mocking 1Y return for visual context
     const mockReturn = (Math.random() * 20 + 10).toFixed(2);
+    const name = getFundName(fund);
+    const code = getFundCode(fund);
     
-    card.innerHTML = `
-        <div class="fund-name">${fund.schemeName}</div>
+    card.innerHTML = \`
+        <div class="fund-name">${name}</div>
         <div class="fund-stats">
             <div>
                 <span class="stat-label">1Y Return</span>
-                <strong class="green-text">${mockReturn}%</strong>
+                <strong class="green-text">\${mockReturn}%</strong>
             </div>
             <div>
-                <span class="stat-label">Rating</span>
-                <strong>4.5 ★</strong>
+                <span class="stat-label">Scheme Code</span>
+                <strong>${code || '--'}</strong>
             </div>
         </div>
-    `;
+    \`;
     card.addEventListener('click', () => openFundDetails(fund));
     return card;
 };
 
 // Search handling
-mfSearch.addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
-    filteredFunds = mutualFunds.filter(fund => 
-        fund.schemeName.toLowerCase().includes(term) ||
-        fund.schemeCode.toString().includes(term)
-    );
+mfSearch.addEventListener('input', (async (e) => {
+    const term = e.target.value.trim();
+    if (term.length > 2) {
+        try {
+            const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(term)}`);
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.data || []);
+            filteredFunds = list.slice(0, 50);
+        } catch {
+             filteredFunds = mutualFunds.filter(fund => 
+                getFundName(fund).toLowerCase().includes(term.toLowerCase()) ||
+                getFundCode(fund).toString().includes(term)
+            );
+        }
+    } else {
+        filteredFunds = [...mutualFunds];
+    }
     renderFunds();
-});
+}));
+
+let navPollingInterval = null;
 
 // View Navigation
 const openFundDetails = async (fund) => {
     selectedScheme = fund;
-    schemeName.textContent = fund.schemeName;
+    schemeName.textContent = getFundName(fund);
     schemeNav.textContent = 'Fetching...';
+    if (navDate) navDate.textContent = '--';
+    if (navLiveText) navLiveText.textContent = 'Connecting...';
     
     exploreView.classList.remove('active-view');
     allFundsView.classList.remove('active-view');
@@ -117,18 +147,46 @@ const openFundDetails = async (fund) => {
     tabSip.classList.add('active');
     tabLumpsum.classList.remove('active');
 
-    try {
-        const response = await fetch(`${API_URL}/nav/${fund.schemeCode}`);
-        if(response.ok) {
-            const data = await response.json();
-            schemeNav.textContent = `₹${data.nav}`;
-        } else {
-             schemeNav.textContent = `₹${(Math.random() * 200 + 50).toFixed(2)}`; // fallback mock NAV
+    const schemeCode = getFundCode(fund);
+    let navPollingTicks = 0;
+    const fetchNav = async () => {
+        try {
+            if (!schemeCode) {
+                schemeNav.textContent = '₹--';
+                if (navLiveText) navLiveText.textContent = 'Scheme code unavailable';
+                return;
+            }
+            const response = await fetch(`${API_URL}/schemes/${schemeCode}/nav`);
+            if (response.ok) {
+                const data = await response.json();
+                const navValue = data?.data?.nav || data?.nav;
+                const navDateValue = data?.data?.date || data?.date;
+                schemeNav.textContent = navValue ? `₹${parseFloat(navValue).toFixed(2)}` : '₹--';
+                if (navDate && navDateValue) navDate.textContent = navDateValue;
+                schemeNav.classList.add('updated-highlight');
+                setTimeout(() => schemeNav.classList.remove('updated-highlight'), 500);
+                navPollingTicks += 1;
+                if (navLiveText) navLiveText.textContent = `Live updates (${navPollingTicks})`;
+            } else {
+                schemeNav.textContent = '₹--';
+                if (navLiveText) navLiveText.textContent = 'Live updates unavailable';
+            }
+        } catch {
+            schemeNav.textContent = '₹--';
+            if (navLiveText) navLiveText.textContent = 'Live updates unavailable';
         }
-    } catch {
-       schemeNav.textContent = `₹${(Math.random() * 200 + 50).toFixed(2)}`; // fallback mock NAV
-    }
+    };
+    
+    await fetchNav();
+    if (navPollingInterval) clearInterval(navPollingInterval);
+    navPollingInterval = setInterval(fetchNav, 5000);
 };
+
+const stopPolling = () => {
+    if (navPollingInterval) clearInterval(navPollingInterval);
+    navPollingInterval = null;
+    if (navLiveText) navLiveText.textContent = 'Live updates paused';
+}
 
 viewAllFundsLink.addEventListener('click', (e) => {
     e.preventDefault();
@@ -142,6 +200,7 @@ backToExploreFromAllBtn.addEventListener('click', () => {
 });
 
 backToExploreBtn.addEventListener('click', () => {
+    stopPolling();
     fundDetailView.classList.remove('active-view');
     exploreView.classList.add('active-view');
     selectedScheme = null;

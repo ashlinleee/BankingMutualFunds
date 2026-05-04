@@ -241,6 +241,33 @@ body {
   color: var(--primary-color);
 }
 
+.status-text {
+  margin: 6px 0 18px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: #f1faf7;
+  border: 1px solid #d7f3ea;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(0, 208, 156, 0.15);
+}
+
 /* Detail View */
 .back-btn {
   background: none;
@@ -488,4 +515,12 @@ select {
 
 .primary-btn:hover {
   background: var(--primary-hover);
+}
+/* Update Highlight Animation */
+.updated-highlight {
+  background-color: #d4edda;
+  color: #155724;
+  transition: background-color 0.5s ease;
+  border-radius: 4px;
+  padding: 2px 4px;
 }
