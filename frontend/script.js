@@ -3,8 +3,11 @@ const API_URL = 'http://localhost:3000/api/mf';
 // DOM Elements
 const mfSearch = document.getElementById('mf-search');
 const exploreView = document.getElementById('explore-view');
+const allFundsView = document.getElementById('all-funds-view');
 const fundDetailView = document.getElementById('fund-detail-view');
 const backToExploreBtn = document.getElementById('back-to-explore');
+const backToExploreFromAllBtn = document.getElementById('back-to-explore-from-all');
+const viewAllFundsLink = document.getElementById('view-all-funds-link');
 const popularFundsGrid = document.getElementById('popular-funds-grid');
 const allFundsGrid = document.getElementById('all-funds-grid');
 
@@ -103,6 +106,7 @@ const openFundDetails = async (fund) => {
     schemeNav.textContent = 'Fetching...';
     
     exploreView.classList.remove('active-view');
+    allFundsView.classList.remove('active-view');
     fundDetailView.classList.add('active-view');
     
     // Reset widget
@@ -125,6 +129,17 @@ const openFundDetails = async (fund) => {
        schemeNav.textContent = `₹${(Math.random() * 200 + 50).toFixed(2)}`; // fallback mock NAV
     }
 };
+
+viewAllFundsLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    exploreView.classList.remove('active-view');
+    allFundsView.classList.add('active-view');
+});
+
+backToExploreFromAllBtn.addEventListener('click', () => {
+    allFundsView.classList.remove('active-view');
+    exploreView.classList.add('active-view');
+});
 
 backToExploreBtn.addEventListener('click', () => {
     fundDetailView.classList.remove('active-view');

@@ -29,31 +29,71 @@
       </div>
     </header>
 
-    <div class="main-container">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <ul class="nav-links">
-          <li class="active" id="nav-explore">Explore</li>
-          <li id="nav-dashboard">Dashboard</li>
-          <li id="nav-investments">Your Investments</li>
-          <li id="nav-sips">SIPs</li>
-          <li id="nav-watchlist">Watchlist</li>
-        </ul>
-      </aside>
+    <!-- Sub Navigation -->
+    <nav class="sub-nav">
+      <ul class="nav-links">
+        <li class="active" id="nav-explore">Explore</li>
+        <li id="nav-dashboard">Dashboard</li>
+        <li id="nav-sips">SIPs</li>
+        <li id="nav-watchlist">Watchlist</li>
+      </ul>
+    </nav>
 
+    <div class="main-container">
       <!-- Content Area -->
       <main class="content">
         <!-- Explore Section -->
         <section id="explore-view" class="view-section active-view">
           <div class="explore-header">
-            <h2>Popular Mutual Funds</h2>
-            <button class="text-btn">View All</button>
+            <h2>Popular Funds</h2>
           </div>
           <div class="fund-grid" id="popular-funds-grid">
             <!-- Populated by JS -->
           </div>
 
-          <div class="explore-header" style="margin-top: 40px">
+          <div style="margin-top: 20px; margin-bottom: 40px">
+            <a href="#" id="view-all-funds-link" class="text-link"
+              >All Mutual Funds &gt;</a
+            >
+          </div>
+
+          <div class="explore-header">
+            <h2>Collections</h2>
+          </div>
+          <div class="collections-grid">
+            <div class="collection-card">
+              <div class="collection-icon">📈</div>
+              <span>High return</span>
+            </div>
+            <div class="collection-card">
+              <div class="collection-icon">💰</div>
+              <span>SIP with 100</span>
+            </div>
+            <div class="collection-card">
+              <div class="collection-icon">🥇</div>
+              <span>Gold & Silver</span>
+            </div>
+            <div class="collection-card">
+              <div class="collection-icon">🏢</div>
+              <span>Large Cap</span>
+            </div>
+            <div class="collection-card">
+              <div class="collection-icon">🏬</div>
+              <span>Mid Cap</span>
+            </div>
+            <div class="collection-card">
+              <div class="collection-icon">🏪</div>
+              <span>Small Cap</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- All Funds Section -->
+        <section id="all-funds-view" class="view-section">
+          <button class="back-btn" id="back-to-explore-from-all">
+            ← Back to Explore
+          </button>
+          <div class="explore-header">
             <h2>All Mutual Funds</h2>
           </div>
           <div class="fund-grid" id="all-funds-grid">
@@ -69,13 +109,54 @@
           <div class="detail-layout">
             <div class="detail-main">
               <div class="fund-header">
+                <div class="fund-tags">
+                  <span class="tag">Equity</span>
+                  <span class="tag">Sectoral / Thematic</span>
+                  <span class="tag risk-tag">Very High Risk</span>
+                </div>
                 <h1 id="scheme-name">Fund Name</h1>
-                <p>
-                  Current NAV:
-                  <span id="scheme-nav" class="nav-value">₹--</span>
-                </p>
-                <div class="graph-placeholder">
-                  NAV historical graph would go here.
+
+                <div class="fund-key-stats">
+                  <div class="stat-item">
+                    <span class="stat-label"
+                      >NAV (<span id="nav-date">10 May</span>)</span
+                    >
+                    <span class="stat-value" id="scheme-nav">₹--</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">Rating</span>
+                    <span class="stat-value">4.5 ★</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">Min. SIP</span>
+                    <span class="stat-value">₹500</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">Fund Size</span>
+                    <span class="stat-value">₹4,200 Cr</span>
+                  </div>
+                </div>
+
+                <div class="chart-section">
+                  <div class="chart-durations">
+                    <button class="duration-btn">1M</button>
+                    <button class="duration-btn">6M</button>
+                    <button class="duration-btn">1Y</button>
+                    <button class="duration-btn active">3Y</button>
+                    <button class="duration-btn">5Y</button>
+                    <button class="duration-btn">All</button>
+                  </div>
+                  <div class="graph-placeholder">
+                    <!-- Graph Mockup -->
+                    <svg viewBox="0 0 500 150" class="mock-chart">
+                      <polyline
+                        fill="none"
+                        stroke="#00d09c"
+                        stroke-width="3"
+                        points="0,120 50,110 100,105 150,130 200,90 250,85 300,60 350,50 400,30 450,40 500,20"
+                      />
+                    </svg>
+                  </div>
                 </div>
               </div>
 
@@ -85,6 +166,13 @@
                 <div class="calc-tabs">
                   <button class="calc-tab active">Monthly SIP</button>
                   <button class="calc-tab">One-time</button>
+                </div>
+                <div class="calc-durations" style="margin-bottom: 20px">
+                  <button class="duration-btn">1M</button>
+                  <button class="duration-btn">6M</button>
+                  <button class="duration-btn">1Y</button>
+                  <button class="duration-btn active">3Y</button>
+                  <button class="duration-btn">5Y</button>
                 </div>
                 <div class="calc-slider">
                   <label
@@ -100,11 +188,88 @@
                     class="slider"
                   />
                 </div>
-                <div class="calc-result">
-                  <p>
-                    Estimated Returns:
-                    <strong class="green-text">₹12,450</strong>
-                  </p>
+                <div
+                  class="calc-result"
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    background: #f9f9f9;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin-top: 15px;
+                  "
+                >
+                  <div>
+                    <span
+                      style="
+                        font-size: 12px;
+                        color: var(--text-muted);
+                        display: block;
+                      "
+                      >Total Investment</span
+                    >
+                    <strong>₹1,80,000</strong>
+                  </div>
+                  <div style="text-align: right">
+                    <span
+                      style="
+                        font-size: 12px;
+                        color: var(--text-muted);
+                        display: block;
+                      "
+                      >Est. Returns</span
+                    >
+                    <strong class="green-text" style="font-size: 18px"
+                      >₹2,45,600</strong
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Expense Ratio, Exit Load, Tax -->
+              <div class="detail-card">
+                <h3>Expense Ratio, Exit Load, Tax</h3>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px;
+                  "
+                >
+                  <div>
+                    <span style="font-size: 14px; color: var(--text-muted)"
+                      >Expense Ratio</span
+                    >
+                    <p style="font-weight: 600; margin-top: 5px">0.75%</p>
+                  </div>
+                  <div>
+                    <span style="font-size: 14px; color: var(--text-muted)"
+                      >Exit Load</span
+                    >
+                    <p style="font-weight: 600; margin-top: 5px">
+                      1% if redeemed within 15 days
+                    </p>
+                  </div>
+                  <div>
+                    <span style="font-size: 14px; color: var(--text-muted)"
+                      >Stamp Duty</span
+                    >
+                    <p style="font-weight: 600; margin-top: 5px">0.005%</p>
+                  </div>
+                  <div>
+                    <span style="font-size: 14px; color: var(--text-muted)"
+                      >Tax</span
+                    >
+                    <p
+                      style="
+                        font-size: 13px;
+                        color: var(--text-dark);
+                        margin-top: 5px;
+                      "
+                    >
+                      15% for < 1 yr. 10% for > 1yr on gains over ₹1L
+                    </p>
+                  </div>
                 </div>
               </div>
 

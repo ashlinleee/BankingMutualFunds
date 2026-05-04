@@ -82,40 +82,43 @@ body {
 /* Layout */
 .main-container {
   display: flex;
+  flex-direction: column;
   max-width: 1400px;
   margin: 0 auto;
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 120px);
 }
 
-/* Sidebar */
-.sidebar {
-  width: 250px;
+/* Sub Navigation */
+.sub-nav {
+  max-width: 1400px;
+  margin: 0 auto;
   background: var(--white);
-  border-right: 1px solid var(--border-color);
-  padding: 20px 0;
+  padding: 0 40px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .nav-links {
   list-style: none;
+  display: flex;
+  gap: 30px;
 }
 
 .nav-links li {
-  padding: 15px 30px;
-  font-weight: 500;
+  padding: 15px 0;
+  font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
   transition: 0.2s;
+  border-bottom: 3px solid transparent;
 }
 
 .nav-links li:hover {
-  color: var(--primary-color);
-  background: #f9f9f9;
+  color: var(--text-dark);
 }
 
 .nav-links li.active {
-  color: var(--primary-color);
-  border-right: 3px solid var(--primary-color);
-  background: #f4fcf9;
+  color: var(--text-dark);
+  border-bottom: 3px solid var(--text-dark);
 }
 
 /* Content Area */
@@ -174,8 +177,51 @@ body {
 .fund-name {
   font-weight: 600;
   font-size: 16px;
-  margin-bottom: 10px;
+  margin-bottom: 25px;
   line-height: 1.4;
+}
+
+.text-link {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+.collections-grid {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.collection-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 15px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  min-width: 120px;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.collection-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+.collection-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
 }
 
 .fund-stats {
@@ -234,7 +280,85 @@ body {
 
 .fund-header h1 {
   font-size: 28px;
-  margin-bottom: 10px;
+  margin-bottom: 25px;
+}
+
+.fund-tags {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.tag {
+  background: var(--bg-color);
+  color: var(--text-dark);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.risk-tag {
+  background: #fff0f0;
+  color: #d32f2f;
+  border-color: #ffd8d8;
+}
+
+.fund-key-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--text-dark);
+}
+
+.chart-section {
+  margin-top: 20px;
+}
+
+.chart-durations,
+.calc-durations {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.duration-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+.duration-btn:hover {
+  background: var(--bg-color);
+}
+
+.duration-btn.active {
+  color: var(--primary-color);
+  background: #e5faf5;
 }
 
 .nav-value {
@@ -244,14 +368,16 @@ body {
 
 .graph-placeholder {
   height: 250px;
-  background: #f4f5f7;
-  border-radius: 8px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
   margin-top: 20px;
-  border: 1px dashed #ccc;
+}
+
+.mock-chart {
+  width: 100%;
+  height: 100%;
 }
 
 .detail-card {
