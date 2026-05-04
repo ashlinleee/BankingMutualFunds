@@ -11,32 +11,44 @@
       <h1>Mutual Fund Investment</h1>
 
       <div id="flow-container">
-        <div class="flow-step" id="step-1">
-          <h2>Select Mutual Fund</h2>
-          <input
-            type="text"
-            id="mf-search"
-            placeholder="Search for a Mutual Fund"
-          />
-          <div id="mf-list"></div>
+        <div class="flow-step" id="step-0">
+          <h2>Select Customer</h2>
+          <select id="customer-selection"></select>
+          <button id="customer-continue-btn">Continue</button>
+        </div>
+
+        <div class="flow-step" id="step-1" style="display: none">
+          <h2>Select MF House (AMC)</h2>
+          <select id="amc-selection"></select>
+          <button id="amc-continue-btn">Continue</button>
         </div>
 
         <div class="flow-step" id="step-2" style="display: none">
+          <h2>Select Scheme</h2>
+          <input
+            type="text"
+            id="scheme-search"
+            placeholder="Search schemes within the MF house"
+          />
+          <div id="scheme-list"></div>
+        </div>
+
+        <div class="flow-step" id="step-3" style="display: none">
           <h2 id="scheme-name"></h2>
-          <p>Current NAV: <span id="scheme-nav"></span></p>
+          <p>Latest NAV: <span id="scheme-nav"></span></p>
           <div class="investment-type">
             <button id="lumpsum-btn">Lumpsum</button>
             <button id="sip-btn">SIP</button>
           </div>
         </div>
 
-        <div class="flow-step" id="step-3-lumpsum" style="display: none">
+        <div class="flow-step" id="step-4-lumpsum" style="display: none">
           <h2>Lumpsum Investment</h2>
           <input type="number" id="lumpsum-amount" placeholder="Enter Amount" />
           <button id="lumpsum-invest-btn">Invest</button>
         </div>
 
-        <div class="flow-step" id="step-3-sip" style="display: none">
+        <div class="flow-step" id="step-4-sip" style="display: none">
           <h2>SIP Investment</h2>
           <input
             type="number"
@@ -51,16 +63,13 @@
           <button id="sip-invest-btn">Invest</button>
         </div>
 
-        <div class="flow-step" id="step-4" style="display: none">
-          <h2>Select Account</h2>
-          <select id="account-selection">
-            <option value="account1">Account 1 (Balance: 50000)</option>
-            <option value="account2">Account 2 (Balance: 100000)</option>
-          </select>
+        <div class="flow-step" id="step-5" style="display: none">
+          <h2>Select Account (CBS)</h2>
+          <select id="account-selection"></select>
           <button id="confirm-payment-btn">Confirm Payment</button>
         </div>
 
-        <div class="flow-step" id="step-5" style="display: none">
+        <div class="flow-step" id="step-6" style="display: none">
           <h2>Investment Successful!</h2>
           <p>Your investment has been processed.</p>
         </div>

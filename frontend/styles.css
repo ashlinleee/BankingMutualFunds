@@ -23,14 +23,14 @@ h2 {
   margin-bottom: 20px;
 }
 
-#mf-search {
+#scheme-search {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
   box-sizing: border-box;
 }
 
-#mf-list {
+#scheme-list {
   max-height: 300px;
   overflow-y: auto;
   border: 1px solid #ddd;
@@ -58,6 +58,7 @@ h2 {
 }
 
 input[type="number"],
+input[type="text"],
 select {
   width: 100%;
   padding: 10px;

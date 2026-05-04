@@ -43,9 +43,19 @@ router.get('/customers', (req, res) => {
 
 // Get accounts for a specific customer
 router.get('/accounts/:custNo', (req, res) => {
-  const { custNo } = req.params;
-  const customerAccounts = accounts.filter(acc => acc.CustNo == custNo && acc.AcctStat === 1); // Only active accounts
-  res.json(customerAccounts);
+    const { custNo } = req.params;
+    const activeStatuses = new Set([1, 3]);
+    const customerAccounts = accounts
+        .filter(acc => acc.CustNo == custNo && activeStatuses.has(acc.AcctStat))
+        .map(acc => ({
+            custNo: acc.CustNo,
+            branchCode: acc.LBrCode,
+            accountId: acc.PrdAcctId,
+            status: acc.AcctStat,
+            balance: acc.ActTotBalLcy,
+        }));
+
+    res.json(customerAccounts);
 });
 
 module.exports = router;
