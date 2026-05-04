@@ -1,207 +1,182 @@
-const API_BASE = 'http://localhost:3000/api';
-const MF_API = `${API_BASE}/mf`;
-const CBS_API = `${API_BASE}/cbs`;
+const API_URL = 'http://localhost:3000/api/mf';
 
-const step0 = document.getElementById('step-0');
-const step1 = document.getElementById('step-1');
-const step2 = document.getElementById('step-2');
-const step3 = document.getElementById('step-3');
-const step4Lumpsum = document.getElementById('step-4-lumpsum');
-const step4Sip = document.getElementById('step-4-sip');
-const step5 = document.getElementById('step-5');
-const step6 = document.getElementById('step-6');
+// DOM Elements
+const mfSearch = document.getElementById('mf-search');
+const exploreView = document.getElementById('explore-view');
+const allFundsView = document.getElementById('all-funds-view');
+const fundDetailView = document.getElementById('fund-detail-view');
+const backToExploreBtn = document.getElementById('back-to-explore');
+const backToExploreFromAllBtn = document.getElementById('back-to-explore-from-all');
+const viewAllFundsLink = document.getElementById('view-all-funds-link');
+const popularFundsGrid = document.getElementById('popular-funds-grid');
+const allFundsGrid = document.getElementById('all-funds-grid');
 
-const customerSelection = document.getElementById('customer-selection');
-const customerContinueBtn = document.getElementById('customer-continue-btn');
-const amcSelection = document.getElementById('amc-selection');
-const amcContinueBtn = document.getElementById('amc-continue-btn');
-const schemeSearch = document.getElementById('scheme-search');
-const schemeList = document.getElementById('scheme-list');
-
+// Details
 const schemeName = document.getElementById('scheme-name');
 const schemeNav = document.getElementById('scheme-nav');
-const lumpsumBtn = document.getElementById('lumpsum-btn');
-const sipBtn = document.getElementById('sip-btn');
-const lumpsumAmount = document.getElementById('lumpsum-amount');
-const lumpsumInvestBtn = document.getElementById('lumpsum-invest-btn');
-const sipAmount = document.getElementById('sip-amount');
-const sipInstallments = document.getElementById('sip-installments');
+
+// Invest Widget
+const tabSip = document.getElementById('tab-sip');
+const tabLumpsum = document.getElementById('tab-lumpsum');
+const formSip = document.getElementById('form-sip');
+const formLumpsum = document.getElementById('form-lumpsum');
 const sipInvestBtn = document.getElementById('sip-invest-btn');
-const accountSelection = document.getElementById('account-selection');
+const lumpsumInvestBtn = document.getElementById('lumpsum-invest-btn');
+const paymentStep = document.getElementById('payment-step');
+const paymentSuccess = document.getElementById('payment-success');
 const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
 
-let customers = [];
-let accounts = [];
-let amcs = [];
-let schemes = [];
-let selectedCustomer = null;
-let selectedAmc = null;
+let mutualFunds = [];
+let filteredFunds = [];
 let selectedScheme = null;
-let investmentType = null;
-let investmentAmount = 0;
 
-const unwrapData = (payload) => {
-    if (!payload) {
-        return [];
-    }
-    if (payload.data) {
-        return payload.data;
-    }
-    return payload;
+// Initialization
+const init = async () => {
+    await fetchMutualFunds();
 };
 
-const fetchCustomers = async () => {
-    const response = await fetch(`${CBS_API}/customers`);
-    customers = await response.json();
-    customerSelection.innerHTML = customers
-        .map(customer => `<option value="${customer.CustNo}">${customer.Longname}</option>`)
-        .join('');
-};
-
-const fetchAccounts = async (custNo) => {
-    const response = await fetch(`${CBS_API}/accounts/${custNo}`);
-    accounts = await response.json();
-    accountSelection.innerHTML = accounts
-        .map(acc => {
-            const balance = Number(acc.balance).toFixed(2);
-            return `<option value="${acc.accountId}" data-balance="${acc.balance}">${acc.accountId} (Balance: ${balance})</option>`;
-        })
-        .join('');
-};
-
-const fetchAmcs = async () => {
-    const response = await fetch(`${MF_API}/amcs`);
-    const payload = await response.json();
-    amcs = unwrapData(payload);
-    amcSelection.innerHTML = amcs
-        .map(amc => `<option value="${amc.slug || amc.amc_slug || amc}">${amc.name || amc}</option>`)
-        .join('');
-};
-
-const fetchSchemesForAmc = async (amcSlug) => {
-    const response = await fetch(`${MF_API}/amcs/${amcSlug}`);
-    const payload = await response.json();
-    const amcData = unwrapData(payload);
-    schemes = amcData.schemes || amcData.scheme_list || amcData || [];
-    renderSchemes(schemes);
-};
-
-const renderSchemes = (schemeItems) => {
-    schemeList.innerHTML = '';
-    schemeItems.forEach(scheme => {
-        const schemeCode = scheme.scheme_code || scheme.amfi_code || scheme.code || scheme.schemeCode;
-        const schemeNameText = scheme.scheme_name || scheme.name || scheme.schemeName;
-        if (!schemeCode || !schemeNameText) {
-            return;
-        }
-        const item = document.createElement('div');
-        item.classList.add('mf-item');
-        item.textContent = `${schemeNameText} (${schemeCode})`;
-        item.addEventListener('click', () => selectScheme({
-            schemeCode,
-            schemeName: schemeNameText,
-        }));
-        schemeList.appendChild(item);
-    });
-};
-
-const selectScheme = async (scheme) => {
-    selectedScheme = scheme;
-    step2.style.display = 'none';
-    step3.style.display = 'block';
-    schemeName.textContent = scheme.schemeName;
+const fetchMutualFunds = async () => {
     try {
-        const response = await fetch(`${MF_API}/schemes/${scheme.schemeCode}/nav`);
-        const payload = await response.json();
-        const navData = unwrapData(payload);
-        schemeNav.textContent = navData.nav ?? 'N/A';
+        const response = await fetch(API_URL);
+        mutualFunds = await response.json();
+        filteredFunds = [...mutualFunds];
+        renderFunds();
     } catch (error) {
-        console.error('Error fetching NAV:', error);
-        schemeNav.textContent = 'N/A';
+        console.error('Error fetching mutual funds:', error);
+        // Fallback mockup data if backend fails
+        mutualFunds = [
+            { schemeCode: 120503, schemeName: "Nippon India Small Cap Fund" },
+            { schemeCode: 119598, schemeName: "SBI Small Cap Fund" },
+            { schemeCode: 118989, schemeName: "HDFC Small Cap Fund" },
+            { schemeCode: 146503, schemeName: "Quant Small Cap Fund" }
+        ];
+        filteredFunds = [...mutualFunds];
+        renderFunds();
     }
 };
 
-schemeSearch.addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    const filteredSchemes = schemes.filter(scheme => {
-        const schemeNameText = (scheme.scheme_name || scheme.name || scheme.schemeName || '').toLowerCase();
-        const schemeCode = (scheme.scheme_code || scheme.amfi_code || scheme.code || scheme.schemeCode || '').toString();
-        return schemeNameText.includes(searchTerm) || schemeCode.includes(searchTerm);
-    });
-    renderSchemes(filteredSchemes);
-});
-
-customerContinueBtn.addEventListener('click', async () => {
-    selectedCustomer = customerSelection.value;
-    await fetchAccounts(selectedCustomer);
-    step0.style.display = 'none';
-    step1.style.display = 'block';
-});
-
-amcContinueBtn.addEventListener('click', async () => {
-    selectedAmc = amcSelection.value;
-    await fetchSchemesForAmc(selectedAmc);
-    step1.style.display = 'none';
-    step2.style.display = 'block';
-});
-
-lumpsumBtn.addEventListener('click', () => {
-    investmentType = 'lumpsum';
-    step3.style.display = 'none';
-    step4Lumpsum.style.display = 'block';
-});
-
-sipBtn.addEventListener('click', () => {
-    investmentType = 'sip';
-    step3.style.display = 'none';
-    step4Sip.style.display = 'block';
-});
-
-const proceedToPayment = (amount) => {
-    investmentAmount = amount;
-    if (investmentType === 'lumpsum') {
-        step4Lumpsum.style.display = 'none';
-    } else {
-        step4Sip.style.display = 'none';
-    }
-    step5.style.display = 'block';
+const renderFunds = () => {
+    popularFundsGrid.innerHTML = '';
+    allFundsGrid.innerHTML = '';
+    
+    // Just rendering all logic. For "popular", let's just pick top 3
+    const popular = filteredFunds.slice(0, 3);
+    
+    popular.forEach(fund => popularFundsGrid.appendChild(createFundCard(fund)));
+    filteredFunds.forEach(fund => allFundsGrid.appendChild(createFundCard(fund)));
 };
 
-lumpsumInvestBtn.addEventListener('click', () => {
-    const amount = parseFloat(lumpsumAmount.value);
-    if (amount > 0) {
-        proceedToPayment(amount);
-    } else {
-        alert('Please enter a valid amount.');
-    }
+const createFundCard = (fund) => {
+    const card = document.createElement('div');
+    card.classList.add('fund-card');
+    // Mocking 1Y return for visual context
+    const mockReturn = (Math.random() * 20 + 10).toFixed(2);
+    
+    card.innerHTML = `
+        <div class="fund-name">${fund.schemeName}</div>
+        <div class="fund-stats">
+            <div>
+                <span class="stat-label">1Y Return</span>
+                <strong class="green-text">${mockReturn}%</strong>
+            </div>
+            <div>
+                <span class="stat-label">Rating</span>
+                <strong>4.5 ★</strong>
+            </div>
+        </div>
+    `;
+    card.addEventListener('click', () => openFundDetails(fund));
+    return card;
+};
+
+// Search handling
+mfSearch.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    filteredFunds = mutualFunds.filter(fund => 
+        fund.schemeName.toLowerCase().includes(term) ||
+        fund.schemeCode.toString().includes(term)
+    );
+    renderFunds();
 });
 
+// View Navigation
+const openFundDetails = async (fund) => {
+    selectedScheme = fund;
+    schemeName.textContent = fund.schemeName;
+    schemeNav.textContent = 'Fetching...';
+    
+    exploreView.classList.remove('active-view');
+    allFundsView.classList.remove('active-view');
+    fundDetailView.classList.add('active-view');
+    
+    // Reset widget
+    paymentStep.style.display = 'none';
+    paymentSuccess.style.display = 'none';
+    formSip.style.display = 'block';
+    formLumpsum.style.display = 'none';
+    tabSip.classList.add('active');
+    tabLumpsum.classList.remove('active');
+
+    try {
+        const response = await fetch(`${API_URL}/nav/${fund.schemeCode}`);
+        if(response.ok) {
+            const data = await response.json();
+            schemeNav.textContent = `₹${data.nav}`;
+        } else {
+             schemeNav.textContent = `₹${(Math.random() * 200 + 50).toFixed(2)}`; // fallback mock NAV
+        }
+    } catch {
+       schemeNav.textContent = `₹${(Math.random() * 200 + 50).toFixed(2)}`; // fallback mock NAV
+    }
+};
+
+viewAllFundsLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    exploreView.classList.remove('active-view');
+    allFundsView.classList.add('active-view');
+});
+
+backToExploreFromAllBtn.addEventListener('click', () => {
+    allFundsView.classList.remove('active-view');
+    exploreView.classList.add('active-view');
+});
+
+backToExploreBtn.addEventListener('click', () => {
+    fundDetailView.classList.remove('active-view');
+    exploreView.classList.add('active-view');
+    selectedScheme = null;
+});
+
+// Invest Widget Tabs
+tabSip.addEventListener('click', () => {
+    tabSip.classList.add('active');
+    tabLumpsum.classList.remove('active');
+    formSip.style.display = 'block';
+    formLumpsum.style.display = 'none';
+    paymentStep.style.display = 'none';
+});
+
+tabLumpsum.addEventListener('click', () => {
+    tabLumpsum.classList.add('active');
+    tabSip.classList.remove('active');
+    formLumpsum.style.display = 'block';
+    formSip.style.display = 'none';
+    paymentStep.style.display = 'none';
+});
+
+// Payment flow
 sipInvestBtn.addEventListener('click', () => {
-    const amount = parseFloat(sipAmount.value);
-    const installments = parseInt(sipInstallments.value, 10);
-    if (amount > 0 && installments > 0) {
-        proceedToPayment(amount * installments);
-    } else {
-        alert('Please enter a valid amount and number of installments.');
-    }
+    paymentStep.style.display = 'block';
+});
+lumpsumInvestBtn.addEventListener('click', () => {
+    paymentStep.style.display = 'block';
 });
 
 confirmPaymentBtn.addEventListener('click', () => {
-    const selectedOption = accountSelection.options[accountSelection.selectedIndex];
-    const balance = Number(selectedOption.dataset.balance || 0);
-
-    if (balance >= investmentAmount) {
-        console.log(`Deducting ${investmentAmount} from ${selectedOption.value}`);
-        step5.style.display = 'none';
-        step6.style.display = 'block';
-    } else {
-        alert('Insufficient balance.');
-    }
+    paymentStep.style.display = 'none';
+    formSip.style.display = 'none';
+    formLumpsum.style.display = 'none';
+    paymentSuccess.style.display = 'block';
 });
-
-const init = async () => {
-    await fetchCustomers();
-    await fetchAmcs();
-};
 
 init();
